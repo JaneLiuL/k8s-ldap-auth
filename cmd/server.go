@@ -98,6 +98,11 @@ func getServerCmd() *cli.Command {
 				Usage:   "The `PATH` to the public key file",
 				EnvVars: []string{"PUBLIC_KEY_FILE"},
 			},
+			&cli.StringFlag{
+				Name:    "ldap-rootca",
+				Usage:   "ldap rootca",
+				EnvVars: []string{"LDAP_ROOTCA"},
+			},
 			&cli.Int64Flag{
 				Name:    "token-ttl",
 				Value:   43200,
@@ -119,7 +124,7 @@ func getServerCmd() *cli.Command {
 				extraAttributes  = c.StringSlice("extra-attributes")
 				memberofProperty = c.String("memberof-property")
 				usernameProperty = c.String("username-property")
-
+				rootCA           = c.String("ldap-rootca")
 				privateKeyFile = c.String("private-key-file")
 				publicKeyFile  = c.String("public-key-file")
 
@@ -137,6 +142,7 @@ func getServerCmd() *cli.Command {
 					searchScope,
 					searchFilter,
 					memberofProperty,
+					rootCA,
 					usernameProperty,
 					extraAttributes,
 				),
