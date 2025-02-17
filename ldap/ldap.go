@@ -71,47 +71,51 @@ func NewInstance(
 func loadRootCA(rootCAPath string) (*x509.CertPool, error) {
 	rootCA := x509.NewCertPool()
 	if rootCAPath != "" {
-		rootCAPath, err := os.ReadFile(rootCAPath)
+		rootCAFile, err := os.ReadFile(rootCAPath)
 		if err != nil {
 			return nil, err
 		}
 		ok := rootCA.AppendCertsFromPEM(rootCAFile)
 		if !ok {
-			return nil, errors,New("fail to append root ca from PEM")
+			return nil, errors.New("fail to append root ca from PEM")
 		}
 	}
 	return rootCA, nil
 }
 func (s *Ldap) Bind() (*ldap.Conn, error) {
-	rootCa, err: := loadRootCA(s.rootCA)
+	rootCa, err := loadRootCA(s.rootCA)
 	if err != nil {
 		return nil, err
 	}
 	ln := new(ldap.Conn)
 	if strings.HasPrefix(s.ldapURL, "ldaps") {
 		tlsConfig := &tls.Config{MaxVersion: tls.VersionTLS12, RootCAs: rootCa}
-		ln, err := ldap.DialURL(s.ldapURL)
+		ln, err = ldap.DialURL(s.ldapURL, ldap.DialWithTLSConfig((tlsConfig)))
 		if err != nil {
 			return nil, err
 		}
 	} else {
-        	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+		tlsConfig := &tls.Config{InsecureSkipVerify: true}
 		ln, err := ldap.DialURL(s.ldapURL)
 		if err != nil {
 			return nil, err
 		}
-        }
-	
+		err = ln.StartTLS(tlsConfig)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	log.Debug().Msg("Successfully dialed ldap.")
 
-	err = l.Bind(s.bindDN, s.bindPassword)
+	err = ln.Bind(s.bindDN, s.bindPassword)
 	if err != nil {
 		return nil, err
 	}
 
 	log.Debug().Msg("Successfully authenticated to ldap.")
 
-	return l, nil
+	return ln, nil
 }
 
 func (s *Ldap) Search(username, password string) (*auth.UserInfo, error) {
