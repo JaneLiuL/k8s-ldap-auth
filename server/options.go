@@ -23,6 +23,7 @@ func WithLdap(
 	searchScope,
 	searchFilter,
 	memberofProperty,
+	rootCa,
 	usernameProperty string,
 	extraAttributes []string) Option {
 	return func(i *Instance) error {
@@ -35,6 +36,7 @@ func WithLdap(
 			searchFilter,
 			memberofProperty,
 			usernameProperty,
+			rootCa,
 			extraAttributes,
 			append(extraAttributes, memberofProperty, usernameProperty),
 		)
